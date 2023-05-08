@@ -18,7 +18,8 @@ void enterWaitConfig()
 
 void enterInitialPeriph()
 {
-    tftInit();
+    tftDisplay.TFTDisplayWelcome();
+
     ServiceState::set(MODE_RUNNING);
 }
 
