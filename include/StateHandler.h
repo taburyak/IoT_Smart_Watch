@@ -18,9 +18,8 @@ void enterWaitConfig()
 
 void enterInitialPeriph()
 {
-    tftDisplay.TFTDisplayWelcome();
-
-    ServiceState::set(MODE_RUNNING);
+    tftDisplay.Init();
+    ServiceState::set(MODE_DISPLAY);
 }
 
 void enterConfigMode()
@@ -45,6 +44,7 @@ void enterRun()
 
 void enterDisplay()
 {
+    tftDisplay.Welcome();
     ServiceState::set(MODE_RUNNING);
 }
 

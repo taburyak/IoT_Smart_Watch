@@ -18,11 +18,17 @@ private:
     Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
 public:
     TFTDisplay();
-    void TFTDisplayWelcome();
+    void Init();
+    void Welcome();
     ~TFTDisplay();
 };
 
 TFTDisplay::TFTDisplay()
+{
+    
+}
+
+inline void TFTDisplay::Init()
 {
     pinMode(TFT_BACKLIGHT, OUTPUT);
     digitalWrite(TFT_BACKLIGHT, HIGH); // Backlight on
@@ -32,7 +38,7 @@ TFTDisplay::TFTDisplay()
     tft.fillScreen(ST77XX_BLACK);
 }
 
-void TFTDisplay::TFTDisplayWelcome()
+inline void TFTDisplay::Welcome()
 {
     tft.setCursor(0, 0);
     tft.setTextColor(ST77XX_YELLOW);
