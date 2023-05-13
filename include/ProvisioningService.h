@@ -22,6 +22,8 @@ class Provisioning {
 public:
   void begin()
   {
+    Serial.begin(115200);
+    
     DEBUG_PRINT("");
     DEBUG_PRINT("*------------------------------------*");
     DEBUG_PRINT("*       ESP32 IoT Smart Watch        *");
