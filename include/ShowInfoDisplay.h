@@ -12,14 +12,21 @@
 #define TFT_MOSI                GPIO_NUM_23  // Data out
 #define TFT_SCLK                GPIO_NUM_18  // Clock out
 
+//Week Days
+String weekDays[7]={"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+//Month names
+String months[12]={"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+
 class ShowInfoDisplay
 {
 private:
     Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
 public:
+    bool flagDot = false;
     ShowInfoDisplay();
     void Init();
     void Welcome();
+    void ShowTimeDate();
     void ShowYouTubeInfo(int subscriber, int view, int video);
     ~ShowInfoDisplay();
 };
@@ -39,7 +46,9 @@ inline void ShowInfoDisplay::Init()
 
     tft.initR(INITR_GREENTAB);
     tft.setRotation(0);
-    tft.fillScreen(ST77XX_BLACK);
+    uint8_t madctl = ST77XX_MADCTL_MX | ST77XX_MADCTL_MY | ST77XX_MADCTL_RGB;
+    tft.sendCommand(ST77XX_MADCTL, &madctl, 1);
+    tft.fillScreen(TFT_BACKGRAUND_COLOR);
 }
 
 inline void ShowInfoDisplay::Welcome()
@@ -53,8 +62,66 @@ inline void ShowInfoDisplay::Welcome()
 
     tft.setTextSize(1U);
     tft.getTextBounds(bufStr, 0, 0, &x, &y, &w, &h);
-    tft.setTextColor(ST7735_GREEN, ST7735_BLACK);
+    tft.setTextColor(ST7735_ORANGE, TFT_BACKGRAUND_COLOR);
     tft.setCursor((ST7735_TFTWIDTH_128 / 2) - (w / 2), 0);
+    tft.print(bufStr);
+}
+
+inline void ShowInfoDisplay::ShowTimeDate()
+{
+    int16_t x, y;
+    uint16_t w, h;
+
+    struct tm timeinfo;
+
+    getLocalTime( &timeinfo );
+
+    String bufStr;
+    
+    char bufChar[6];
+    
+    if(flagDot)
+    {
+        sprintf(bufChar, "%02d:%02d", timeinfo.tm_hour + TIME_ZONE, timeinfo.tm_min);
+    }    
+    else
+    {
+        sprintf(bufChar, "%02d %02d", timeinfo.tm_hour + TIME_ZONE, timeinfo.tm_min);
+    }
+    
+    bufStr = String(bufChar);
+
+    tft.setTextSize(TFT_CLOCK_SIZE);
+    tft.getTextBounds(bufStr, 0, 0, &x, &y, &w, &h);
+    tft.setTextColor(TFT_CLOCK_COLOR, TFT_BACKGRAUND_COLOR);
+    tft.setCursor((ST7735_TFTWIDTH_128 / 2) - (w / 2), TFT_CLOCK_Y);
+    tft.print(bufStr);
+
+    sprintf(bufChar, "%02d", timeinfo.tm_mday);
+
+    bufStr = "   " + String(bufChar) + " " + months[timeinfo.tm_mon] + " " + String(timeinfo.tm_year - 100U) + "   ";
+
+    tft.setTextSize(TFT_DATE_SIZE);
+    tft.getTextBounds(bufStr, 0, 0, &x, &y, &w, &h);
+    tft.setTextColor(TFT_DATE_COLOR, TFT_BACKGRAUND_COLOR);
+    tft.setCursor((ST7735_TFTWIDTH_128 / 2) - (w / 2), TFT_DATE_Y);
+    tft.print(bufStr);
+    
+    bufStr = "  " + weekDays[timeinfo.tm_wday] + "  ";
+
+    tft.setTextSize(TFT_WEEKDAY_SIZE);
+    tft.getTextBounds(bufStr, 0, 0, &x, &y, &w, &h);
+    
+    if(timeinfo.tm_mday == 0 || timeinfo.tm_mday == 6)
+    {
+        tft.setTextColor(TFT_WEEKENDS_COLOR, TFT_BACKGRAUND_COLOR);
+    }
+    else
+    {
+        tft.setTextColor(TFT_WEEKDAYS_COLOR, TFT_BACKGRAUND_COLOR);
+    }
+    
+    tft.setCursor((ST7735_TFTWIDTH_128 / 2) - (w / 2), TFT_WEEKDAY_Y);
     tft.print(bufStr);
 }
 

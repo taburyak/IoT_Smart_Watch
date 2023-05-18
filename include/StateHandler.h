@@ -12,8 +12,6 @@
 const char *apiKey      = YOUTUBE_API_KEY;
 const char *channelId   = YOUTUBE_CHANNEL_ID;
 
-bool flagDot = false;
-
 SimpleTimer timer;
 
 void timerOnceSecond();
@@ -69,6 +67,7 @@ void enterRun()
 
 void enterDisplay()
 {
+    tftDisplay.ShowTimeDate();
     ServiceState::set(MODE_RUNNING);
 }
 
@@ -119,7 +118,7 @@ void enterError()
 
 void timerOnceSecond()
 {
-    flagDot = !flagDot;
+    tftDisplay.flagDot = !tftDisplay.flagDot;
     ServiceState::set(MODE_DISPLAY);
 }
 
