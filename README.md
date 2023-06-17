@@ -23,4 +23,4 @@ Optional features:
 - RTC module
 - Alarm clock
 - Over-the-air firmware update
-- Temperature and humidity readings are sent to a server such as https://thingspeak.com/
+- Temperature and humidity readings are sent to a server such as https://thingspeak.com/ (See example: https://thingspeak.com/channels/2193007)
