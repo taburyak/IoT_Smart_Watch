@@ -23,6 +23,7 @@ WiFiClient client;
 void timerOnceSecond();
 void timerRefreshData();
 void displayYouTubeSubscriberCount();
+void displayOpenWeather();
 
 void enterWaitConfig()
 {
@@ -82,13 +83,22 @@ void enterDisplay()
 
 void enterRefreshData()
 {
-    if(tftDisplay.flagShowData)
+    if(tftDisplay.flagShowData == TypeShowDisplay::startShow)
+    {
+        ++tftDisplay.flagShowData;
+    }
+
+    if(tftDisplay.flagShowData == TypeShowDisplay::youtubeSubscriber)
     {
         displayYouTubeSubscriberCount();
     }
-    else
+    else if(tftDisplay.flagShowData == TypeShowDisplay::sensorDHT11)
     {
         tftDisplay.ShowTempAndHum(dht11.GetTemp(), dht11.GetHum());
+    }
+    else if(tftDisplay.flagShowData == TypeShowDisplay::openWeather)
+    {
+        displayOpenWeather();
     }
 
     ThingSpeak.setField(1, dht11.GetTemp());
@@ -151,7 +161,7 @@ void timerOnceSecond()
 
 void timerRefreshData()
 {
-    tftDisplay.flagShowData = !tftDisplay.flagShowData;
+    ++tftDisplay.flagShowData;
     ServiceState::set(MODE_REFRESH_DATA);
 }
 
@@ -197,9 +207,9 @@ void displayYouTubeSubscriberCount()
                 {
                     Serial.print("deserializeJson() failed: ");
                     Serial.println(error.f_str());
-                    youtube_subscriber_count = -1;
-                    youtube_view_count = -1;
-                    youtube_video_count = -1;
+                    youtube_subscriber_count = 0;
+                    youtube_view_count = 0;
+                    youtube_video_count = 0;
                 }
                 else 
                 {
@@ -215,4 +225,82 @@ void displayYouTubeSubscriberCount()
     https.end();
 
     tftDisplay.ShowYouTubeInfo(youtube_subscriber_count, youtube_view_count, youtube_video_count);
+}
+
+void displayOpenWeather()
+{
+    float temp = 0.0;
+    int pressure = 0;
+    float humidity = 0.0;
+    float speed = 0.0;
+
+    String openWeatherMapApiKey = OPEN_WEATHER_MAP_API_KEY;
+    String city = CITY;
+    String countryCode = COUNTRY_CODE;
+    String jsonBuffer;
+
+    WiFiClient client;
+    // client.setInsecure();      // as long as it is SSL we are good, not checking actual ssl key
+    HTTPClient https;
+    https.useHTTP10(true);    // required for deserializeJson (https://arduinojson.org/v6/how-to/use-arduinojson-with-httpclient/)
+
+    String restful_url = "http://api.openweathermap.org/data/2.5/weather?q=" + city + "," + countryCode + "&APPID=" + openWeatherMapApiKey;
+
+    String url = restful_url;
+
+    Serial.println("displayOpenWeather()");
+    Serial.print("calling url: ");
+    Serial.println(url);
+
+    if ( https.begin(client, url.c_str() )) 
+    {  
+        int httpCode = https.GET();
+        Serial.printf("[HTTPS] GET... code: %d\n", httpCode);
+        
+        if (httpCode > 0) 
+        {
+            if (httpCode == 200 ) 
+            {
+                DynamicJsonDocument doc(JSON_MEMORY_BUFFER);
+                DeserializationError error = deserializeJson(doc, https.getStream());
+                if (error) 
+                {
+                    Serial.print("deserializeJson() failed: ");
+                    Serial.println(error.f_str());
+                    float temp = -1.0;
+                    int pressure = -1;
+                    float humidity = -1.0;
+                    float speed = -1.0;
+                }
+                else 
+                {
+                    Serial.println(https.getString());
+                    
+                    const char* name = doc["name"];
+                    Serial.print("City: ");
+                    Serial.println(name);
+
+                    temp = doc["main"]["temp"].as<float>() - 273.15;
+                    Serial.print("Temperature: ");
+                    Serial.println(temp);
+
+                    humidity = doc["main"]["humidity"].as<float>();
+                    Serial.print("Humidity: ");
+                    Serial.println(humidity);
+                    
+                    pressure = doc["main"]["pressure"].as<int>();
+                    Serial.print("Pressure: ");
+                    Serial.println(pressure);
+
+                    speed = doc["wind"]["speed"].as<float>();
+                    Serial.print("Wind Speed: ");
+                    Serial.println(speed);
+                }
+            }
+        } 
+    }
+
+    https.end();
+
+    tftDisplay.ShowOpenWeather(temp, humidity, pressure, speed);
 }
