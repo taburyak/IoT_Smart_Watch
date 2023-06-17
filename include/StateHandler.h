@@ -8,12 +8,17 @@
 #include "TempAndHum.h"
 #include <SimpleTimer.h>
 #include <ArduinoJson.h>
+#include "ThingSpeak.h"
 
 // Replace with your network credentials
-const char *apiKey      = YOUTUBE_API_KEY;
-const char *channelId   = YOUTUBE_CHANNEL_ID;
+const char *apiKey              = YOUTUBE_API_KEY;
+const char *channelId           = YOUTUBE_CHANNEL_ID;
+
+unsigned long myChannelNumber   = SECRET_CH_ID;
+const char * myWriteAPIKey      = SECRET_WRITE_APIKEY;
 
 SimpleTimer timer;
+WiFiClient client;
 
 void timerOnceSecond();
 void timerRefreshData();
@@ -51,6 +56,7 @@ void enterConnectNet()
 void enterConnectCloud()
 {
     displayYouTubeSubscriberCount();
+    ThingSpeak.begin(client);
     ServiceState::set(MODE_RUNNING);
 }
 
@@ -84,6 +90,21 @@ void enterRefreshData()
     {
         tftDisplay.ShowTempAndHum(dht11.GetTemp(), dht11.GetHum());
     }
+
+    ThingSpeak.setField(1, dht11.GetTemp());
+    ThingSpeak.setField(2, dht11.GetHum());
+
+    int x = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+
+    if(x == 200)
+    {
+        Serial.println("Channel update successful.");
+    }
+    else
+    {
+        Serial.println("Problem updating channel. HTTP error code " + String(x));
+    }
+
     ServiceState::set(MODE_RUNNING);
 }
 
