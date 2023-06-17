@@ -1,7 +1,7 @@
 #pragma once
 
-#define BOARD_FIRMWARE_VERSION  "0.1.0"
-#define BOARD_HARDWARE_VERSION  "0.0.1"
+#define BOARD_FIRMWARE_VERSION  "0.1.1"
+#define BOARD_HARDWARE_VERSION  "0.0.2"
 
 #define TIME_ZONE               (3U)
 
@@ -31,7 +31,7 @@
 #define ESP_WIFIMANAGER_VERSION_MIN_TARGET      "ESP_WiFiManager v1.12.0"
 #define ESP_WIFIMANAGER_VERSION_MIN             1012000
 
-#define JSON_MEMORY_BUFFER      (1024*2) // now much memory to give to the decoding of the json response
+#define JSON_MEMORY_BUFFER      (1024*1) // now much memory to give to the decoding of the json response
 typedef struct
 {
     bool flagConfig;

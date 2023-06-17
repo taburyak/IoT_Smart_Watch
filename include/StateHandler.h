@@ -5,14 +5,20 @@
 #include "ShowInfoDisplay.h"
 #include "SettingsIoT.h"
 #include "WiFiConnect.h"
+#include "TempAndHum.h"
 #include <SimpleTimer.h>
 #include <ArduinoJson.h>
+#include "ThingSpeak.h"
 
 // Replace with your network credentials
-const char *apiKey      = YOUTUBE_API_KEY;
-const char *channelId   = YOUTUBE_CHANNEL_ID;
+const char *apiKey              = YOUTUBE_API_KEY;
+const char *channelId           = YOUTUBE_CHANNEL_ID;
+
+unsigned long myChannelNumber   = SECRET_CH_ID;
+const char * myWriteAPIKey      = SECRET_WRITE_APIKEY;
 
 SimpleTimer timer;
+WiFiClient client;
 
 void timerOnceSecond();
 void timerRefreshData();
@@ -28,13 +34,15 @@ void enterInitialPeriph()
     tftDisplay.Init();
     tftDisplay.Welcome();
 
+    dht11.InitSensor();
+
     ServiceState::set(MODE_CONFIGURING);
 }
 
 void enterConfigMode()
 {
     timer.setInterval(1000U, timerOnceSecond);
-    timer.setInterval(1000U * 60U * 10U, timerRefreshData);
+    timer.setInterval(1000U * 60U * 1U, timerRefreshData);
 
     ServiceState::set(MODE_CONNECTING_NET);
 }
@@ -48,6 +56,7 @@ void enterConnectNet()
 void enterConnectCloud()
 {
     displayYouTubeSubscriberCount();
+    ThingSpeak.begin(client);
     ServiceState::set(MODE_RUNNING);
 }
 
@@ -73,11 +82,29 @@ void enterDisplay()
 
 void enterRefreshData()
 {
-    displayYouTubeSubscriberCount();
+    if(tftDisplay.flagShowData)
+    {
+        displayYouTubeSubscriberCount();
+    }
+    else
+    {
+        tftDisplay.ShowTempAndHum(dht11.GetTemp(), dht11.GetHum());
+    }
 
-    // timeClient.update();
+    ThingSpeak.setField(1, dht11.GetTemp());
+    ThingSpeak.setField(2, dht11.GetHum());
 
-    // ServiceState::set(MODE_RUNNING);
+    int x = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+
+    if(x == 200)
+    {
+        Serial.println("Channel update successful.");
+    }
+    else
+    {
+        Serial.println("Problem updating channel. HTTP error code " + String(x));
+    }
+
     ServiceState::set(MODE_RUNNING);
 }
 
@@ -124,6 +151,7 @@ void timerOnceSecond()
 
 void timerRefreshData()
 {
+    tftDisplay.flagShowData = !tftDisplay.flagShowData;
     ServiceState::set(MODE_REFRESH_DATA);
 }
 
@@ -135,9 +163,9 @@ void timerRefreshData()
 void displayYouTubeSubscriberCount()
 {
     // const int json_memory_buffer = JSON_MEMORY_BUFFER;
-    int youtube_subscriber_count = 0;
-    int youtube_view_count = 0;
-    int youtube_video_count = 0;
+    uint32_t youtube_subscriber_count = 0;
+    uint32_t youtube_view_count = 0;
+    uint32_t youtube_video_count = 0;
   
     WiFiClientSecure client;
     client.setInsecure();      // as long as it is SSL we are good, not checking actual ssl key
