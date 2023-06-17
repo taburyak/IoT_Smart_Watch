@@ -5,6 +5,7 @@
 #include "ShowInfoDisplay.h"
 #include "SettingsIoT.h"
 #include "WiFiConnect.h"
+#include "TempAndHum.h"
 #include <SimpleTimer.h>
 #include <ArduinoJson.h>
 
@@ -28,13 +29,15 @@ void enterInitialPeriph()
     tftDisplay.Init();
     tftDisplay.Welcome();
 
+    dht11.InitSensor();
+
     ServiceState::set(MODE_CONFIGURING);
 }
 
 void enterConfigMode()
 {
     timer.setInterval(1000U, timerOnceSecond);
-    timer.setInterval(1000U * 60U * 10U, timerRefreshData);
+    timer.setInterval(1000U * 60U * 1U, timerRefreshData);
 
     ServiceState::set(MODE_CONNECTING_NET);
 }
@@ -73,11 +76,14 @@ void enterDisplay()
 
 void enterRefreshData()
 {
-    displayYouTubeSubscriberCount();
-
-    // timeClient.update();
-
-    // ServiceState::set(MODE_RUNNING);
+    if(tftDisplay.flagShowData)
+    {
+        displayYouTubeSubscriberCount();
+    }
+    else
+    {
+        tftDisplay.ShowTempAndHum(dht11.GetTemp(), dht11.GetHum());
+    }
     ServiceState::set(MODE_RUNNING);
 }
 
@@ -124,6 +130,7 @@ void timerOnceSecond()
 
 void timerRefreshData()
 {
+    tftDisplay.flagShowData = !tftDisplay.flagShowData;
     ServiceState::set(MODE_REFRESH_DATA);
 }
 
@@ -135,9 +142,9 @@ void timerRefreshData()
 void displayYouTubeSubscriberCount()
 {
     // const int json_memory_buffer = JSON_MEMORY_BUFFER;
-    int youtube_subscriber_count = 0;
-    int youtube_view_count = 0;
-    int youtube_video_count = 0;
+    uint32_t youtube_subscriber_count = 0;
+    uint32_t youtube_view_count = 0;
+    uint32_t youtube_video_count = 0;
   
     WiFiClientSecure client;
     client.setInsecure();      // as long as it is SSL we are good, not checking actual ssl key
