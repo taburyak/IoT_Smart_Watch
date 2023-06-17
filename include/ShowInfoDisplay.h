@@ -12,6 +12,26 @@
 #define TFT_MOSI                GPIO_NUM_23  // Data out
 #define TFT_SCLK                GPIO_NUM_18  // Clock out
 
+enum class TypeShowDisplay
+{
+    startShow,
+    youtubeSubscriber,
+    sensorDHT11,
+    openWeather,
+    endShow
+};
+
+TypeShowDisplay& operator++(TypeShowDisplay& type)
+{
+    using IntType = typename std::underlying_type<TypeShowDisplay>::type;
+    type = static_cast<TypeShowDisplay>(static_cast<IntType>(type) + 1);
+    if (type == TypeShowDisplay::endShow)
+    {
+        type = TypeShowDisplay::startShow;
+    }
+    return type;
+}
+
 //Week Days
 String weekDays[7]={"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 //Month names
@@ -23,13 +43,14 @@ private:
     Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
 public:
     bool flagDot = false;
-    bool flagShowData = false;
+    TypeShowDisplay flagShowData = TypeShowDisplay::startShow;
     ShowInfoDisplay();
     void Init();
     void Welcome();
     void ShowTimeDate();
     void ShowYouTubeInfo(uint32_t subscriber, uint32_t view, uint32_t video);
     void ShowTempAndHum(float temp, float hum);
+    void ShowOpenWeather(float temp, float hum, int pressure, float speed);
     ~ShowInfoDisplay();
 };
 
@@ -229,7 +250,7 @@ void ShowInfoDisplay::ShowTempAndHum(float temp, float hum)
     tft.print(display_line); // print some text
     line_number += 1;
 
-    sprintf(display_line, "Humidity");
+    sprintf(display_line, "Humidity:");
     tft.getTextBounds(display_line, 0, 0, &tbx, &tby, &tbw, &tbh); // it works for origin 0, 0, fortunately (negative tby!)
     x = ((tft.width() - tbw) / 2) - tbx;
     y = starting_y_for_text+((tbh+vertical_spacing)*line_number);
@@ -238,6 +259,69 @@ void ShowInfoDisplay::ShowTempAndHum(float temp, float hum)
     ++line_number;
 
     sprintf(display_line, "%.1f", hum);
+    tft.getTextBounds(display_line, 0, 0, &tbx, &tby, &tbw, &tbh); // it works for origin 0, 0, fortunately (negative tby!)
+    x = ((tft.width() - tbw) / 2) - tbx;
+    y = starting_y_for_text+((tbh+vertical_spacing)*line_number);    // tbh height of font + a few pixels
+    tft.setCursor(x, y); // set the postition to start printing text
+    tft.print(display_line); // print some text
+    line_number += 1;
+}
+
+void ShowInfoDisplay::ShowOpenWeather(float temp, float hum, int pressure, float speed)
+{
+    uint8_t starting_y_for_text = 80;
+    uint8_t vertical_spacing = 4;
+    uint8_t line_number = 0;
+    char display_line[80];
+    
+    int16_t tbx, tby; uint16_t tbw, tbh; // boundary box window
+    uint16_t x, y;
+
+    tft.fillRect(0, starting_y_for_text, ST7735_TFTWIDTH_128, ST7735_TFTHEIGHT_160 - starting_y_for_text, TFT_BACKGRAUND_COLOR);
+
+    tft.setTextColor(ST7735_GREEN, TFT_BACKGRAUND_COLOR);
+
+    sprintf(display_line, "Temperature:");
+    tft.getTextBounds(display_line, 0, 0, &tbx, &tby, &tbw, &tbh); // it works for origin 0, 0, fortunately (negative tby!)
+    x = ((tft.width() - tbw) / 2) - tbx;
+    y = starting_y_for_text;
+    tft.setCursor(x, y); // set the postition to start printing text
+    tft.print(display_line); // print some text
+    ++line_number;
+
+    sprintf(display_line, "%.1f", temp);
+    tft.getTextBounds(display_line, 0, 0, &tbx, &tby, &tbw, &tbh); // it works for origin 0, 0, fortunately (negative tby!)
+    x = ((tft.width() - tbw) / 2) - tbx;
+    y = starting_y_for_text+((tbh+vertical_spacing)*line_number);    // tbh height of font + a few pixels
+    tft.setCursor(x, y); // set the postition to start printing text
+    tft.print(display_line); // print some text
+    line_number += 1;
+
+    sprintf(display_line, "Humidity:");
+    tft.getTextBounds(display_line, 0, 0, &tbx, &tby, &tbw, &tbh); // it works for origin 0, 0, fortunately (negative tby!)
+    x = ((tft.width() - tbw) / 2) - tbx;
+    y = starting_y_for_text+((tbh+vertical_spacing)*line_number);
+    tft.setCursor(x, y); // set the postition to start printing text
+    tft.print(display_line); // print some text
+    ++line_number;
+
+    sprintf(display_line, "%.1f", hum);
+    tft.getTextBounds(display_line, 0, 0, &tbx, &tby, &tbw, &tbh); // it works for origin 0, 0, fortunately (negative tby!)
+    x = ((tft.width() - tbw) / 2) - tbx;
+    y = starting_y_for_text+((tbh+vertical_spacing)*line_number);    // tbh height of font + a few pixels
+    tft.setCursor(x, y); // set the postition to start printing text
+    tft.print(display_line); // print some text
+    line_number += 1;
+
+    sprintf(display_line, "Pressure:");
+    tft.getTextBounds(display_line, 0, 0, &tbx, &tby, &tbw, &tbh); // it works for origin 0, 0, fortunately (negative tby!)
+    x = ((tft.width() - tbw) / 2) - tbx;
+    y = starting_y_for_text+((tbh+vertical_spacing)*line_number);
+    tft.setCursor(x, y); // set the postition to start printing text
+    tft.print(display_line); // print some text
+    ++line_number;
+
+    sprintf(display_line, "%d", pressure);
     tft.getTextBounds(display_line, 0, 0, &tbx, &tby, &tbw, &tbh); // it works for origin 0, 0, fortunately (negative tby!)
     x = ((tft.width() - tbw) / 2) - tbx;
     y = starting_y_for_text+((tbh+vertical_spacing)*line_number);    // tbh height of font + a few pixels
