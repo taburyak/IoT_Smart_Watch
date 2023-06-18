@@ -1,6 +1,6 @@
 #pragma once
 
-#define BOARD_FIRMWARE_VERSION  "0.2.0"
+#define BOARD_FIRMWARE_VERSION  "0.2.3"
 #define BOARD_HARDWARE_VERSION  "0.0.2"
 
 #define TIME_ZONE               (3U)
