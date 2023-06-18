@@ -22,6 +22,7 @@ WiFiClient client;
 
 void timerOnceSecond();
 void timerRefreshData();
+void timerSendCloudData();
 void displayYouTubeSubscriberCount();
 void displayOpenWeather();
 
@@ -34,7 +35,6 @@ void enterInitialPeriph()
 {
     tftDisplay.Init();
     tftDisplay.Welcome();
-
     dht11.InitSensor();
 
     ServiceState::set(MODE_CONFIGURING);
@@ -44,6 +44,7 @@ void enterConfigMode()
 {
     timer.setInterval(1000U, timerOnceSecond);
     timer.setInterval(1000U * 60U * 1U, timerRefreshData);
+    timer.setInterval(1000U * 60U * 10U, timerSendCloudData);
 
     ServiceState::set(MODE_CONNECTING_NET);
 }
@@ -56,7 +57,6 @@ void enterConnectNet()
 
 void enterConnectCloud()
 {
-    displayYouTubeSubscriberCount();
     ThingSpeak.begin(client);
     ServiceState::set(MODE_RUNNING);
 }
@@ -94,13 +94,18 @@ void enterRefreshData()
     }
     else if(tftDisplay.flagShowData == TypeShowDisplay::sensorDHT11)
     {
-        tftDisplay.ShowTempAndHum(dht11.GetTemp(), dht11.GetHum());
+        tftDisplay.ShowTempAndHum(dht11.GetTemp(), (int) dht11.GetHum());
     }
     else if(tftDisplay.flagShowData == TypeShowDisplay::openWeather)
     {
         displayOpenWeather();
     }
 
+    ServiceState::set(MODE_RUNNING);
+}
+
+void enterSendCloudData()
+{
     ThingSpeak.setField(1, dht11.GetTemp());
     ThingSpeak.setField(2, dht11.GetHum());
 
@@ -165,6 +170,11 @@ void timerRefreshData()
     ServiceState::set(MODE_REFRESH_DATA);
 }
 
+void timerSendCloudData()
+{
+    ServiceState::set(MODE_SEND_CLOUD_DATA);
+}
+
 //--------------------------------------------------------------------------------------------------
 // displayYouTubeSubscriberCount()
 //    Displays subscriber count, total number of public videos, and viewer count
@@ -215,8 +225,14 @@ void displayYouTubeSubscriberCount()
                 {
                     Serial.println(https.getString());
                     youtube_subscriber_count = doc["items"][0]["statistics"]["subscriberCount"].as<int>();
+                    Serial.print("Subscriber: ");
+                    Serial.println(youtube_subscriber_count);
                     youtube_view_count = doc["items"][0]["statistics"]["viewCount"].as<int>();
+                    Serial.print("View: ");
+                    Serial.println(youtube_view_count);
                     youtube_video_count = doc["items"][0]["statistics"]["videoCount"].as<int>();
+                    Serial.print("Video: ");
+                    Serial.println(youtube_video_count);
                 }
             }
         } 
@@ -231,7 +247,7 @@ void displayOpenWeather()
 {
     float temp = 0.0;
     int pressure = 0;
-    float humidity = 0.0;
+    int humidity = 0;
     float speed = 0.0;
 
     String openWeatherMapApiKey = OPEN_WEATHER_MAP_API_KEY;
@@ -267,10 +283,10 @@ void displayOpenWeather()
                 {
                     Serial.print("deserializeJson() failed: ");
                     Serial.println(error.f_str());
-                    float temp = -1.0;
-                    int pressure = -1;
-                    float humidity = -1.0;
-                    float speed = -1.0;
+                    temp = -1.0;
+                    pressure = -1;
+                    humidity = -1;
+                    speed = -1.0;
                 }
                 else 
                 {
@@ -284,7 +300,7 @@ void displayOpenWeather()
                     Serial.print("Temperature: ");
                     Serial.println(temp);
 
-                    humidity = doc["main"]["humidity"].as<float>();
+                    humidity = doc["main"]["humidity"].as<int>();
                     Serial.print("Humidity: ");
                     Serial.println(humidity);
                     

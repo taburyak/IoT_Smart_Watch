@@ -49,8 +49,8 @@ public:
     void Welcome();
     void ShowTimeDate();
     void ShowYouTubeInfo(uint32_t subscriber, uint32_t view, uint32_t video);
-    void ShowTempAndHum(float temp, float hum);
-    void ShowOpenWeather(float temp, float hum, int pressure, float speed);
+    void ShowTempAndHum(float temp, int hum);
+    void ShowOpenWeather(float temp, int hum, int pressure, float speed);
     ~ShowInfoDisplay();
 };
 
@@ -220,7 +220,7 @@ inline void ShowInfoDisplay::ShowYouTubeInfo(uint32_t subscriber, uint32_t view,
     ++line_number;
 }
 
-void ShowInfoDisplay::ShowTempAndHum(float temp, float hum)
+void ShowInfoDisplay::ShowTempAndHum(float temp, int hum)
 {
     uint8_t starting_y_for_text = 80;
     uint8_t vertical_spacing = 4;
@@ -258,7 +258,7 @@ void ShowInfoDisplay::ShowTempAndHum(float temp, float hum)
     tft.print(display_line); // print some text
     ++line_number;
 
-    sprintf(display_line, "%.1f", hum);
+    sprintf(display_line, "%d", hum);
     tft.getTextBounds(display_line, 0, 0, &tbx, &tby, &tbw, &tbh); // it works for origin 0, 0, fortunately (negative tby!)
     x = ((tft.width() - tbw) / 2) - tbx;
     y = starting_y_for_text+((tbh+vertical_spacing)*line_number);    // tbh height of font + a few pixels
@@ -267,7 +267,7 @@ void ShowInfoDisplay::ShowTempAndHum(float temp, float hum)
     line_number += 1;
 }
 
-void ShowInfoDisplay::ShowOpenWeather(float temp, float hum, int pressure, float speed)
+void ShowInfoDisplay::ShowOpenWeather(float temp, int hum, int pressure, float speed)
 {
     uint8_t starting_y_for_text = 80;
     uint8_t vertical_spacing = 4;
@@ -305,7 +305,7 @@ void ShowInfoDisplay::ShowOpenWeather(float temp, float hum, int pressure, float
     tft.print(display_line); // print some text
     ++line_number;
 
-    sprintf(display_line, "%.1f", hum);
+    sprintf(display_line, "%d", hum);
     tft.getTextBounds(display_line, 0, 0, &tbx, &tby, &tbw, &tbh); // it works for origin 0, 0, fortunately (negative tby!)
     x = ((tft.width() - tbw) / 2) - tbx;
     y = starting_y_for_text+((tbh+vertical_spacing)*line_number);    // tbh height of font + a few pixels
