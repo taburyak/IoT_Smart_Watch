@@ -1,6 +1,6 @@
 #pragma once
 
-#define BOARD_FIRMWARE_VERSION  "0.2.3"
+#define BOARD_FIRMWARE_VERSION  "0.2.4"
 #define BOARD_HARDWARE_VERSION  "0.0.2"
 
 #define TIME_ZONE               (3U)
@@ -32,9 +32,3 @@
 #define ESP_WIFIMANAGER_VERSION_MIN             1012000
 
 #define JSON_MEMORY_BUFFER      (1024*1) // now much memory to give to the decoding of the json response
-typedef struct
-{
-    bool flagConfig;
-}ConfigStore_t;
-
-ConfigStore_t configStore = {.flagConfig = false};
