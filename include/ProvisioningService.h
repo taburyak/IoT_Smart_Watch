@@ -34,15 +34,6 @@ public:
     DEBUG_PRINT("Firmware v" + String(BOARD_FIRMWARE_VERSION));
 
     ServiceState::set(MODE_INITIAL_PERIPH);
-    
-    if (configStore.flagConfig) 
-    {
-      ServiceState::set(MODE_CONNECTING_NET);
-    }
-    else
-    {
-      ServiceState::set(MODE_WAIT_CONFIG);
-    }
   }
 
   void run() 
