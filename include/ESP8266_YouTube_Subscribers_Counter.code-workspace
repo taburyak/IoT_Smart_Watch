@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"name": "ESP8266_YouTube_Subscribers_Counter",
+			"path": "../../ESP8266_YouTube_Subscribers_Counter"
+		},
+		{
+			"name": "ESP32_IoT_Smart_Watch",
+			"path": ".."
+		},
+		{
+			"name": "ESP32_WiFiManager_Example",
+			"path": "../../ESP32_WiFiManager_Example"
+		}
+	],
+	"settings": {
+		"cortex-debug.armToolchainPath": "c:\\Users\\tabur\\AppData\\Roaming\\Code\\User\\globalStorage\\bmd.stm32-for-vscode\\@xpack-dev-tools\\arm-none-eabi-gcc\\12.2.1-1.2.1\\.content\\bin",
+		"cortex-debug.openocdPath": "C:\\USERS\\TABUR\\APPDATA\\ROAMING\\CODE\\USER\\GLOBALSTORAGE\\BMD.STM32-FOR-VSCODE\\@XPACK-DEV-TOOLS\\OPENOCD\\0.12.0-1.1\\.CONTENT\\BIN\\OPENOCD.EXE",
+		"files.associations": {
+			"chrono": "cpp"
+		}
+	}
+}

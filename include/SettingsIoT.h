@@ -3,7 +3,7 @@
 #define BOARD_FIRMWARE_VERSION  "0.2.4"
 #define BOARD_HARDWARE_VERSION  "0.0.2"
 
-#define TIME_ZONE               (3U)
+#define TIME_ZONE               (0U)
 
 #define TFT_BACKGRAUND_COLOR    (ST7735_BLACK)
 #define TFT_CLOCK_COLOR         (ST7735_YELLOW)
